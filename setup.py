@@ -12,11 +12,10 @@ setuptools.setup(
     description="A backup helper",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/javatechy/dokr",
+    url="https://github.com/mohammad76/backupper",
     packages=setuptools.find_packages(),
-    py_modules=['ecs_helper', 'docker_helper', 'slack_api'],
     install_requires=[
-        'requests', 'click', 'configparser'
+        'requests', 'click', 'boto3'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
