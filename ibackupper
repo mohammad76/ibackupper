@@ -18,13 +18,15 @@ def cli():
 @click.command()
 @click.option('--access_key', prompt='Your access key', help='s3 access key')
 @click.option('--secret_key', prompt='Your secret key', help='s3 secret key')
+@click.option('--bucket', prompt='Your bucket name', help='s3 bucket name')
 @click.option('--endpoint_url', prompt='Your endpoint address', help='s3 endpoint address')
-def set_config(access_key, secret_key, endpoint_url):
+def set_config(access_key, secret_key, bucket, endpoint_url):
     home = str(Path.home())
     config = open(f"{home}/.chabok_deploy.json", "w")
     config.write(json.dumps({
         "access_key": access_key,
         "secret_key": secret_key,
+        "bucket": bucket,
         "endpoint_url": endpoint_url,
     }))
     config.close()
@@ -59,7 +61,7 @@ def backup(path):
         )
         object_name = f"{backup_name}"
         backup_path = "/tmp/" + backup_name
-        s3_client.upload_file(backup_path, 'services-backups', object_name)
+        s3_client.upload_file(backup_path, config['bucket'], object_name)
         os.remove(backup_path)
 
     config_file.close()
