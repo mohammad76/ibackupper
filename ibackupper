@@ -70,7 +70,7 @@ def backup(path):
         config = json.load(config_file)
         a_path = Path(path)
         if a_path.exists():
-            backup_name = path.split("/")[-1] + "---" + str(datetime.date(datetime.now())) + str(
+            backup_name = path.split("/")[-1] + "---" + str(datetime.date(datetime.now())) + "---" + str(
                 randint(0, 999999)) + ".tar.gz"
 
             os.system(f"cd /tmp && tar -Pczf {backup_name} {path}")

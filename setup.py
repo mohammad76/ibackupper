@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='ibackupper',
-    version='0.5.2',
+    version='0.5.3',
     scripts=['ibackupper'],
     author="Mohammad Abdi",
     author_email="mohammad_abdi76@yahoo.com",
