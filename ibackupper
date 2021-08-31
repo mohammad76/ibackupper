@@ -22,7 +22,11 @@ def cli():
 @click.option('--endpoint_url', prompt='Your endpoint address', help='s3 endpoint address')
 def set_config(access_key, secret_key, bucket, endpoint_url):
     home = str(Path.home())
-    config = open(f"{home}/.chabok_deploy.json", "w")
+    config_path = Path(f"{home}/.ibackupper.json")
+    if config_path.exists():
+        click.echo('ibackupper configured before')
+        return
+    config = open(f"{home}/.ibackupper.json", "w")
     config.write(json.dumps({
         "access_key": access_key,
         "secret_key": secret_key,
@@ -36,39 +40,66 @@ def set_config(access_key, secret_key, bucket, endpoint_url):
 @click.command()
 def get_config():
     home = str(Path.home())
-    config = open(f"{home}/.chabok_deploy.json", "r")
-    click.echo(json.load(config))
-    config.close()
+    config_path = Path(f"{home}/.ibackupper.json")
+    if config_path.exists():
+        config = open(f"{home}/.ibackupper.json", "r")
+        click.echo(json.load(config))
+        config.close()
+    else:
+        click.echo('ibackupper not configured')
+
+
+@click.command()
+def clear_config():
+    home = str(Path.home())
+    config_path = Path(f"{home}/.ibackupper.json")
+    if config_path.exists():
+        click.echo('config cleared')
+        os.remove(config_path)
+    else:
+        click.echo('ibackupper not configured')
 
 
 @click.command()
 @click.option('--path', prompt='Your path', help='path for backup')
 def backup(path):
     home = str(Path.home())
-    config_file = open(f"{home}/.chabok_deploy.json", "r")
-    config = json.load(config_file)
-    backup_name = str(datetime.date(datetime.now())) + str(
-        randint(0, 999999)) + ".tar.gz"
+    config_path = Path(f"{home}/.ibackupper.json")
+    if config_path.exists():
+        config_file = open(f"{home}/.ibackupper.json", "r")
+        config = json.load(config_file)
+        backup_name = str(datetime.date(datetime.now())) + str(
+            randint(0, 999999)) + ".tar.gz"
+        a_path = Path(path)
+        if a_path.exists():
+            os.system(f"cd /tmp && tar -Pczf {backup_name} {path}")
+            object_name = f"{backup_name}"
+            backup_path = "/tmp/" + backup_name
+            session = boto3.session.Session()
+            try:
+                s3_client = session.client(
+                    service_name='s3',
+                    aws_access_key_id=config['access_key'],
+                    aws_secret_access_key=config['secret_key'],
+                    endpoint_url=config['endpoint_url'],
+                )
+                s3_client.upload_file(backup_path, config['bucket'], object_name)
+                click.echo('backup completed successfully')
+            except:
+                click.echo('backup failed, maybe your configuration wrong!')
+            finally:
+                os.remove(backup_path)
+        else:
+            click.echo('path not exists')
 
-    if path:
-        os.system(f"cd /tmp && tar -Pczf {backup_name} {path}")
-        session = boto3.session.Session()
-        s3_client = session.client(
-            service_name='s3',
-            aws_access_key_id=config['access_key'],
-            aws_secret_access_key=config['secret_key'],
-            endpoint_url=config['endpoint_url'],
-        )
-        object_name = f"{backup_name}"
-        backup_path = "/tmp/" + backup_name
-        s3_client.upload_file(backup_path, config['bucket'], object_name)
-        os.remove(backup_path)
-
-    config_file.close()
+        config_file.close()
+    else:
+        click.echo('ibackupper not configured')
 
 
 cli.add_command(set_config)
 cli.add_command(get_config)
+cli.add_command(clear_config)
 cli.add_command(backup)
 
 if __name__ == '__main__':
