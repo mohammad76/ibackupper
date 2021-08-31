@@ -68,10 +68,11 @@ def backup(path):
     if config_path.exists():
         config_file = open(f"{home}/.ibackupper.json", "r")
         config = json.load(config_file)
-        backup_name = str(datetime.date(datetime.now())) + str(
-            randint(0, 999999)) + ".tar.gz"
         a_path = Path(path)
         if a_path.exists():
+            backup_name = path.split("/")[-1] + "---" + str(datetime.date(datetime.now())) + str(
+                randint(0, 999999)) + ".tar.gz"
+
             os.system(f"cd /tmp && tar -Pczf {backup_name} {path}")
             object_name = f"{backup_name}"
             backup_path = "/tmp/" + backup_name
