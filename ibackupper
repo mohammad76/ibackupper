@@ -62,7 +62,8 @@ def clear_config():
 
 @click.command()
 @click.option('--path', prompt='Your path', help='path for backup')
-def backup(path):
+@click.option('--name', help='path for backup')
+def backup(path, name):
     home = str(Path.home())
     config_path = Path(f"{home}/.ibackupper.json")
     if config_path.exists():
@@ -70,9 +71,13 @@ def backup(path):
         config = json.load(config_file)
         a_path = Path(path)
         if a_path.exists():
-            backup_name = path.split("/")[-1] + "---" + str(datetime.date(datetime.now())) + "---" + str(
-                randint(0, 999999)) + ".tar.gz"
+            a_name = path.split("/")[-1]
+            if name:
+                a_name = name
 
+            backup_name = a_name + "---" + str(datetime.date(datetime.now())) + "---" + str(
+                randint(0, 999999)) + ".tar.gz"
+            click.echo(backup_name)
             os.system(f"cd /tmp && tar -Pczf {backup_name} {path}")
             object_name = f"{backup_name}"
             backup_path = "/tmp/" + backup_name
